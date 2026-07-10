@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:16-pgdg
+    container_name: photo-db
+    environment:
+      POSTGRES_DB: photomanager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: photo-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photo-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/photomanager
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/callback
+      - LOCAL_PHOTOS_DIR=/photos
+    volumes:
+      - ./photos:/photos
+      - model_cache:/root/.cache
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photo-worker
+    command: celery -A backend.tasks.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/photomanager
+      - REDIS_URL=redis://redis:6379/0
+      - LOCAL_PHOTOS_DIR=/photos
+    volumes:
+      - ./photos:/photos
+      - model_cache:/root/.cache
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+volumes:
+  pgdata:
+  model_cache:
