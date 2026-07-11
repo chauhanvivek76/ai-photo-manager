@@ -5,6 +5,7 @@ import logging
 import hashlib
 import imagehash
 import numpy as np
+from PIL import Image, ImageDraw
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 
@@ -25,6 +26,29 @@ from backend.schemas import (
 )
 from backend.ai_models import get_text_embedding
 from backend.indexer import scan_local_directory, sync_google_photos_library
+
+# Helper to generate mock image placeholder when files do not exist on disk
+def generate_placeholder_image(text_label: str, width: int = 400, height: int = 400):
+    h = int(hashlib.md5(text_label.encode()).hexdigest(), 16)
+    r = ((h & 0xFF0000) >> 16) % 120 + 40
+    g = ((h & 0x00FF00) >> 8) % 120 + 40
+    b = (h & 0x0000FF) % 120 + 40
+    
+    img = Image.new("RGB", (width, height), color=(r, g, b))
+    draw = ImageDraw.Draw(img)
+    
+    # Draw simple frame border
+    draw.rectangle([width//10, height//10, width*9//10, height*9//10], outline="#ffffff", width=2)
+    
+    # Draw label text
+    lines = text_label.split('\n')
+    for idx, line in enumerate(lines):
+        draw.text((width//8, height//3 + idx*20), line, fill="#ffffff")
+        
+    buffer = io.BytesIO()
+    img.save(buffer, format="JPEG")
+    buffer.seek(0)
+    return buffer
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -179,8 +203,9 @@ def get_raw_photo(photo_id: int, db: Session = Depends(get_db)):
         if os.path.exists(photo.provider_photo_id):
             return FileResponse(photo.provider_photo_id, media_type=photo.mime_type)
         else:
-            # Try to return fallback placeholder
-            raise HTTPException(status_code=404, detail="Local file missing on disk.")
+            # Return generated placeholder for mock images
+            buffer = generate_placeholder_image(f"{photo.filename}\n({photo.category or 'uncategorized'})", 400, 400)
+            return StreamingResponse(buffer, media_type="image/jpeg")
     elif photo.storage_provider == "google_photos":
         # Check if it's a simulated photo (prefixed with 'sim_')
         if photo.provider_photo_id.startswith("sim_"):
@@ -396,7 +421,9 @@ def get_raw_face_thumbnail(face_id: int, db: Session = Depends(get_db)):
             if os.path.exists(photo.provider_photo_id):
                 img = Image.open(photo.provider_photo_id)
             else:
-                raise HTTPException(status_code=404, detail="Local photo file missing.")
+                # Return generated placeholder for mock face crop
+                buffer = generate_placeholder_image(f"Person", 120, 120)
+                return StreamingResponse(buffer, media_type="image/jpeg")
         elif photo.storage_provider == "google_photos":
             # For simulation or live fetch
             if photo.provider_photo_id.startswith("sim_"):
