@@ -196,6 +196,8 @@ def cluster_faces_task(eps: float = 0.55, min_samples: int = 2):
             
         logger.info(f"Performing bulk database updates for {len(cluster_face_ids)} face cluster groups...")
         for cluster_id, face_ids in cluster_face_ids.items():
+            if cluster_id is None:
+                continue  # Skip updating noise to NULL (they default to NULL, avoiding 80k slow writes)
             chunk_size = 10000
             for start in range(0, len(face_ids), chunk_size):
                 chunk = face_ids[start:start+chunk_size]
