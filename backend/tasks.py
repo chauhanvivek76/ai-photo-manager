@@ -138,7 +138,7 @@ def process_photo_task(photo_id: int, download_url: str = None):
         db.close()
 
 @celery_app.task(name="backend.tasks.cluster_faces_task")
-def cluster_faces_task(eps: float = 0.55, min_samples: int = 2):
+def cluster_faces_task(eps: float = 1.2, min_samples: int = 2):
     """
     Background Celery task that clusters all extracted face embeddings
     using DBSCAN and manages FaceCluster (Person) records.
