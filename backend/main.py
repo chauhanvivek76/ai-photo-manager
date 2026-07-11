@@ -632,7 +632,7 @@ def seed_large_benchmark_dataset(
         if len(photos_batch) >= batch_size:
             db.execute(text("""
                 INSERT INTO photos (id, storage_provider, provider_photo_id, filename, mime_type, file_size, width, height, captured_at, indexed_at, md5, phash, phash_part1, phash_part2, phash_part3, phash_part4, clip_embedding, category, category_confidence)
-                VALUES (:id, :storage_provider, :provider_photo_id, :filename, :mime_type, :file_size, :width, :height, :captured_at, :indexed_at, :md5, :phash::bit(64), :phash_part1, :phash_part2, :phash_part3, :phash_part4, :clip_embedding, :category, :category_confidence)
+                VALUES (:id, :storage_provider, :provider_photo_id, :filename, :mime_type, :file_size, :width, :height, :captured_at, :indexed_at, :md5, CAST(:phash AS bit(64)), :phash_part1, :phash_part2, :phash_part3, :phash_part4, :clip_embedding, :category, :category_confidence)
             """), photos_batch)
             photos_batch = []
             
@@ -651,7 +651,7 @@ def seed_large_benchmark_dataset(
     if photos_batch:
         db.execute(text("""
             INSERT INTO photos (id, storage_provider, provider_photo_id, filename, mime_type, file_size, width, height, captured_at, indexed_at, md5, phash, phash_part1, phash_part2, phash_part3, phash_part4, clip_embedding, category, category_confidence)
-            VALUES (:id, :storage_provider, :provider_photo_id, :filename, :mime_type, :file_size, :width, :height, :captured_at, :indexed_at, :md5, :phash::bit(64), :phash_part1, :phash_part2, :phash_part3, :phash_part4, :clip_embedding, :category, :category_confidence)
+            VALUES (:id, :storage_provider, :provider_photo_id, :filename, :mime_type, :file_size, :width, :height, :captured_at, :indexed_at, :md5, CAST(:phash AS bit(64)), :phash_part1, :phash_part2, :phash_part3, :phash_part4, :clip_embedding, :category, :category_confidence)
         """), photos_batch)
         
     if faces_batch:
