@@ -14,8 +14,27 @@ import {
   ChevronRight,
   Folder,
   AlertCircle,
-  Database
+  Database,
+  FileText,
+  Activity,
+  Receipt,
+  Compass,
+  Sparkles,
+  HelpCircle,
+  Clock,
+  ArrowRight,
+  Filter
 } from 'lucide-react';
+
+const CATEGORY_DECORATIONS = {
+  document: { icon: FileText, color: 'var(--color-document)' },
+  prescription: { icon: Activity, color: 'var(--color-prescription)' },
+  receipt: { icon: Receipt, color: 'var(--color-receipt)' },
+  people: { icon: Users, color: 'var(--color-people)' },
+  travel: { icon: Compass, color: 'var(--color-travel)' },
+  pets: { icon: Sparkles, color: 'var(--color-pets)' },
+  other: { icon: HelpCircle, color: 'var(--color-other)' }
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -28,7 +47,6 @@ export default function App() {
     total_clusters: 0
   });
   
-  // Navigation states
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -47,8 +65,7 @@ export default function App() {
 
   useEffect(() => {
     fetchStats();
-    // Poll stats every 10 seconds to keep syncing counts updated
-    const interval = setInterval(fetchStats, 10000);
+    const interval = setInterval(fetchStats, 8000);
     return () => clearInterval(interval);
   }, []);
 
@@ -64,7 +81,7 @@ export default function App() {
       <aside className="sidebar glass-panel">
         <div className="logo">
           <div className="logo-icon">
-            <ImageIcon size={20} color="#fff" />
+            <ImageIcon size={22} color="#fff" />
           </div>
           <span className="logo-text">AuraPhoto</span>
         </div>
@@ -74,43 +91,43 @@ export default function App() {
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => { setActiveTab('dashboard'); setSelectedPerson(null); }}
           >
-            <LayoutDashboard size={18} />
+            <LayoutDashboard size={20} />
             Dashboard
           </button>
           <button 
             className={`nav-item ${activeTab === 'gallery' ? 'active' : ''}`}
             onClick={() => { setActiveTab('gallery'); setSelectedPerson(null); }}
           >
-            <ImageIcon size={18} />
+            <ImageIcon size={20} />
             Library
           </button>
           <button 
             className={`nav-item ${activeTab === 'duplicates' ? 'active' : ''}`}
             onClick={() => { setActiveTab('duplicates'); setSelectedPerson(null); }}
           >
-            <Copy size={18} />
+            <Copy size={20} />
             Duplicates
           </button>
           <button 
             className={`nav-item ${activeTab === 'people' ? 'active' : ''}`}
             onClick={() => { setActiveTab('people'); }}
           >
-            <Users size={18} />
+            <Users size={20} />
             People
           </button>
           <button 
             className={`nav-item ${activeTab === 'sync' ? 'active' : ''}`}
             onClick={() => { setActiveTab('sync'); setSelectedPerson(null); }}
           >
-            <RefreshCw size={18} />
+            <RefreshCw size={20} />
             Sync Hub
           </button>
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-            <Database size={12} />
-            <span>Scale: 100k Ready</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <Database size={14} />
+            <span>Scale: 100k Benchmark Ready</span>
           </div>
         </div>
       </aside>
@@ -179,7 +196,8 @@ function DashboardPage({ stats, setActiveTab, setSelectedCategory, fetchStats })
     try {
       const res = await fetch('/api/v1/people/cluster', { method: 'POST' });
       if (res.ok) {
-        alert("Face clustering job queued successfully!");
+        // Simple UI feedback
+        setTimeout(fetchStats, 2000);
       }
     } catch (err) {
       console.error(err);
@@ -187,7 +205,7 @@ function DashboardPage({ stats, setActiveTab, setSelectedCategory, fetchStats })
       setTimeout(() => {
         setClustering(false);
         fetchStats();
-      }, 3000);
+      }, 4000);
     }
   };
 
@@ -198,83 +216,108 @@ function DashboardPage({ stats, setActiveTab, setSelectedCategory, fetchStats })
 
   return (
     <div>
-      <div style={{ marginBottom: '35px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Dashboard</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Welcome to AuraPhoto. AI analysis and indexing overview.</p>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px' }}>Dashboard Overview</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Welcome to AuraPhoto. Real-time AI analysis & photo indexing overview.</p>
       </div>
 
-      {/* Stat Grid */}
+      {/* Metric Cards Grid */}
       <div className="stats-grid">
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel card-blue">
           <span className="stat-label">Total Photos</span>
           <span className="stat-val">{stats.total_photos.toLocaleString()}</span>
         </div>
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel card-red">
           <span className="stat-label">Exact Duplicates</span>
-          <span className="stat-val" style={{ color: '#f87171' }}>{stats.exact_duplicates_count}</span>
+          <span className="stat-val" style={{ color: '#fca5a5' }}>{stats.exact_duplicates_count}</span>
         </div>
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel card-gold">
           <span className="stat-label">Near-Duplicates</span>
-          <span className="stat-val" style={{ color: '#fbbf24' }}>{stats.near_duplicates_count}</span>
+          <span className="stat-val" style={{ color: '#fde047' }}>{stats.near_duplicates_count}</span>
         </div>
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel card-purple">
           <span className="stat-label">Faces / People</span>
-          <span className="stat-val">{stats.total_faces} / {stats.total_clusters}</span>
+          <span className="stat-val">{stats.total_faces.toLocaleString()} / {stats.total_clusters}</span>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px', marginTop: '40px' }}>
-        {/* Category breakdown */}
-        <div className="glass-panel" style={{ padding: '30px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Categories</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
-            {Object.entries(stats.by_category).map(([cat, count]) => (
-              <div 
-                key={cat} 
-                className="glass-panel glass-panel-interactive" 
-                style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}
-                onClick={() => handleCategoryClick(cat)}
-              >
-                <span style={{ textTransform: 'capitalize', fontWeight: '600', color: 'var(--text-primary)' }}>{cat}</span>
-                <span style={{ fontSize: '22px', fontWeight: '800' }}>{count.toLocaleString()}</span>
-              </div>
-            ))}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.1fr', gap: '30px', marginTop: '40px' }}>
+        {/* Category Breakdown Panel */}
+        <div className="glass-panel" style={{ padding: '35px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: '700' }}>AI Categorization</h2>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Based on zero-shot CLIP analysis</span>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+            {Object.entries(stats.by_category).map(([cat, count]) => {
+              const config = CATEGORY_DECORATIONS[cat] || { icon: HelpCircle, color: 'var(--color-other)' };
+              const Icon = config.icon;
+              const percentage = stats.total_photos > 0 ? (count / stats.total_photos) * 100 : 0;
+              
+              return (
+                <div 
+                  key={cat} 
+                  className="glass-panel glass-panel-interactive category-dashboard-card" 
+                  onClick={() => handleCategoryClick(cat)}
+                >
+                  <div className="category-header">
+                    <span className="category-title">{cat}</span>
+                    <div className="category-icon-wrapper" style={{ borderLeft: `3px solid ${config.color}` }}>
+                      <Icon size={16} color={config.color} />
+                    </div>
+                  </div>
+                  <span className="category-count">{count.toLocaleString()}</span>
+                  
+                  <div className="progress-bar-bg">
+                    <div 
+                      className="progress-bar-fill" 
+                      style={{ width: `${percentage}%`, background: config.color }}
+                    ></div>
+                  </div>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {percentage.toFixed(1)}% of library
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* AI Actions */}
-        <div className="glass-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <h2 style={{ fontSize: '20px' }}>AI Management</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-            AuraPhoto continuously indexes your library. You can manually trigger face clustering optimizations or run benchmark seedings.
+        {/* AI Management Panel */}
+        <div className="glass-panel" style={{ padding: '35px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: '700' }}>AI Management</h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+            AuraPhoto clusters similar human profiles using custom mathematical projection on vector embeddings.
           </p>
           
           <button 
             className="btn btn-primary" 
             onClick={runClustering} 
             disabled={clustering}
-            style={{ width: '100%', marginTop: '10px' }}
+            style={{ width: '100%', marginTop: '10px', height: '48px' }}
           >
-            <RefreshCw className={clustering ? 'status-syncing' : ''} size={16} />
+            <RefreshCw className={clustering ? 'status-syncing' : ''} size={18} />
             {clustering ? 'Clustering Faces...' : 'Run Face Clustering'}
           </button>
           
-          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '20px', marginTop: '10px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-              SYSTEM INFORMATION
+          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '24px', marginTop: '15px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '12px' }}>
+              INDEX ENGINE INFORMATION
             </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>CLIP Model:</span>
-                <span style={{ color: '#fff' }}>ViT-B-32 (Zero-Shot)</span>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '8px' }}>
+                <span>CLIP Embedding Model:</span>
+                <span style={{ color: '#fff', fontWeight: '600' }}>ViT-B-32 (Zero-Shot)</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>FaceNet:</span>
-                <span style={{ color: '#fff' }}>MTCNN (512-dim)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '8px' }}>
+                <span>FaceNet Model:</span>
+                <span style={{ color: '#fff', fontWeight: '600' }}>MTCNN (512-dim)</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Vector Index:</span>
-                <span style={{ color: '#fff' }}>PostgreSQL HNSW</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px' }}>
+                <span>Database Vector Index:</span>
+                <span style={{ color: '#fff', fontWeight: '600' }}>PostgreSQL HNSW</span>
               </div>
             </div>
           </div>
@@ -350,13 +393,14 @@ function GalleryPage({ selectedCategory, setSelectedCategory, selectedPhoto, set
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '32px' }}>Library</h1>
-        <form onSubmit={handleSearch} className="search-container" style={{ width: '400px', marginBottom: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+        <h1 style={{ fontSize: '36px', fontWeight: '800' }}>Photo Library</h1>
+        
+        <form onSubmit={handleSearch} className="search-container" style={{ width: '420px', marginBottom: 0 }}>
           <Search className="search-icon" size={18} />
           <input 
             type="text" 
-            placeholder="Search with natural language... (e.g. dog in park)"
+            placeholder="Search with natural language... (e.g. scenic travel)"
             className="search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -365,13 +409,13 @@ function GalleryPage({ selectedCategory, setSelectedCategory, selectedPhoto, set
             <RefreshCw 
               className="status-syncing" 
               size={14} 
-              style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }} 
+              style={{ position: 'absolute', right: '18px', top: '50%', transform: 'translateY(-50%)' }} 
             />
           )}
         </form>
       </div>
 
-      {/* Category Pills */}
+      {/* Category Filter Pills */}
       <div className="category-pills">
         {categories.map(cat => (
           <button 
@@ -390,33 +434,36 @@ function GalleryPage({ selectedCategory, setSelectedCategory, selectedPhoto, set
 
       {photos.length === 0 ? (
         <div className="empty-state glass-panel">
-          <ImageIcon className="empty-icon" />
-          <h3>No Photos Found</h3>
-          <p>Index some local folders or trigger simulated Google Photos sync to start.</p>
+          <ImageIcon className="empty-icon" size={40} />
+          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>No Photos Found</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>No indexed files match the selected filter. Trigger a sync or seed data inside Sync Hub.</p>
         </div>
       ) : (
         <>
           <div className="photo-grid">
-            {photos.map(photo => (
-              <div 
-                key={photo.id} 
-                className="photo-card"
-                onClick={() => setSelectedPhoto(photo)}
-              >
-                <img 
-                  src={`/api/v1/photos/${photo.id}/raw`} 
-                  alt={photo.filename} 
-                  className="photo-img" 
-                  loading="lazy"
-                />
-                <div className="photo-overlay">
-                  <span className="photo-title">{photo.filename}</span>
-                  {photo.category && (
-                    <span className="photo-tag">{photo.category}</span>
-                  )}
+            {photos.map(photo => {
+              const config = CATEGORY_DECORATIONS[photo.category] || { color: 'var(--color-other)' };
+              return (
+                <div 
+                  key={photo.id} 
+                  className="photo-card"
+                  onClick={() => setSelectedPhoto(photo)}
+                >
+                  <img 
+                    src={`/api/v1/photos/${photo.id}/raw`} 
+                    alt={photo.filename} 
+                    className="photo-img" 
+                    loading="lazy"
+                  />
+                  <div className="photo-overlay">
+                    <span className="photo-title">{photo.filename}</span>
+                    {photo.category && (
+                      <span className="photo-tag" style={{ background: config.color }}>{photo.category}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pagination */}
@@ -430,7 +477,7 @@ function GalleryPage({ selectedCategory, setSelectedCategory, selectedPhoto, set
                 <ChevronLeft size={16} />
                 Prev
               </button>
-              <span className="page-info">Page {page} of {totalPages} ({total} photos)</span>
+              <span className="page-info">Page {page} of {totalPages} ({total.toLocaleString()} photos)</span>
               <button 
                 className="btn btn-secondary" 
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
@@ -474,7 +521,6 @@ function DuplicatesPage({ fetchStats, setSelectedPhoto }) {
     try {
       const res = await fetch(`/api/v1/photos/${photoId}`, { method: 'DELETE' });
       if (res.ok) {
-        // Re-fetch duplicates and refresh parent stats
         fetchDuplicates();
         fetchStats();
       }
@@ -489,9 +535,9 @@ function DuplicatesPage({ fetchStats, setSelectedPhoto }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '35px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Duplicate Management</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Identify exact replicas (identical MD5) and near-duplicates (similar layout/shot).</p>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px' }}>Duplicate Management</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Identify exact replicas (identical MD5) and near-duplicates (similar layout and pHash segment matches).</p>
       </div>
 
       {loading ? (
@@ -501,23 +547,23 @@ function DuplicatesPage({ fetchStats, setSelectedPhoto }) {
         </div>
       ) : duplicateGroups.length === 0 ? (
         <div className="empty-state glass-panel">
-          <Copy className="empty-icon" />
-          <h3>No Duplicates Detected</h3>
-          <p>Your photo library is clean and duplicates-free!</p>
+          <Copy className="empty-icon" size={40} />
+          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>No Duplicates Detected</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Your photo library is clean and duplicate-free!</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {duplicateGroups.map((group, index) => (
             <div key={index} className="glass-panel dup-group-box">
               <div className="dup-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <h3 style={{ fontSize: '16px' }}>Duplicate Set #{index + 1}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Duplicate Cluster #{index + 1}</h3>
                   <span className={`dup-type-badge ${group.duplicate_type === 'exact' ? 'dup-type-exact' : 'dup-type-near'}`}>
                     {group.duplicate_type} Match
                   </span>
                 </div>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  Original: {group.original.filename}
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  Orig: {group.original.filename}
                 </span>
               </div>
 
@@ -527,15 +573,16 @@ function DuplicatesPage({ fetchStats, setSelectedPhoto }) {
                   <div className="dup-img-wrapper" onClick={() => setSelectedPhoto(group.original)}>
                     <img 
                       src={`/api/v1/photos/${group.original.id}/raw`} 
-                      alt="Original" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                      alt="Original File" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </div>
                   <div className="dup-details">
-                    <span style={{ fontWeight: '600', fontSize: '13px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: '700', fontSize: '13px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#fff' }}>
                       [Original] {group.original.filename}
                     </span>
                     <span className="dup-meta-item">Size: {(group.original.file_size / 1024).toFixed(1)} KB</span>
+                    <span className="dup-meta-item">Category: {group.original.category || 'other'}</span>
                   </div>
                 </div>
 
@@ -545,19 +592,23 @@ function DuplicatesPage({ fetchStats, setSelectedPhoto }) {
                     <div className="dup-img-wrapper" onClick={() => setSelectedPhoto(dup)}>
                       <img 
                         src={`/api/v1/photos/${dup.id}/raw`} 
-                        alt="Duplicate" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                        alt="Duplicate File" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     </div>
                     <div className="dup-details">
-                      <span style={{ fontWeight: '600', fontSize: '13px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontWeight: '600', fontSize: '13px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#fff' }}>
                         {dup.filename}
                       </span>
                       <span className="dup-meta-item">Size: {(dup.file_size / 1024).toFixed(1)} KB</span>
+                      <span className="dup-meta-item" style={{ color: 'var(--danger)', fontWeight: '600' }}>
+                        {group.duplicate_type === 'exact' ? '100% Exact match' : 'Near-duplicate match'}
+                      </span>
+                      
                       <button 
                         className="btn btn-danger" 
                         onClick={() => deletePhoto(dup.id)}
-                        style={{ marginTop: '10px', padding: '6px 12px', fontSize: '12px', width: '100%' }}
+                        style={{ marginTop: '14px', padding: '8px 12px', fontSize: '12px', width: '100%' }}
                       >
                         <Trash2 size={12} />
                         Delete Duplicate
@@ -606,6 +657,7 @@ function PeoplePage({ selectedPerson, setSelectedPerson, setSelectedPhoto }) {
   };
 
   const handleRename = async (id, newName) => {
+    if (!newName.trim()) return;
     try {
       await fetch(`/api/v1/people/${id}`, {
         method: 'PUT',
@@ -636,14 +688,14 @@ function PeoplePage({ selectedPerson, setSelectedPerson, setSelectedPhoto }) {
         <button 
           className="btn btn-secondary" 
           onClick={() => setSelectedPerson(null)}
-          style={{ marginBottom: '25px' }}
+          style={{ marginBottom: '30px' }}
         >
           <ChevronLeft size={16} />
           Back to People
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '35px' }}>
-          <div className="person-avatar-wrapper" style={{ width: '80px', height: '80px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '25px', marginBottom: '40px' }}>
+          <div className="person-avatar-wrapper" style={{ width: '90px', height: '90px' }}>
             <img 
               src={`/api/v1/faces/${personDetails.cover_face_id}/raw`} 
               alt={personDetails.name} 
@@ -660,10 +712,10 @@ function PeoplePage({ selectedPerson, setSelectedPerson, setSelectedPhoto }) {
                 setPersonDetails(prev => ({ ...prev, name: val }));
               }}
               onBlur={() => handleRename(personDetails.id, personDetails.name)}
-              style={{ fontSize: '24px', textAlign: 'left', width: '300px' }}
+              style={{ fontSize: '26px', fontWeight: '800', textAlign: 'left', width: '320px' }}
             />
-            <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Identified in {personDetails.faces_count} photos.
+            <p style={{ color: 'var(--text-secondary)', marginTop: '6px' }}>
+              Facial structures identified in {personDetails.faces_count} photos.
             </p>
           </div>
         </div>
@@ -692,16 +744,16 @@ function PeoplePage({ selectedPerson, setSelectedPerson, setSelectedPhoto }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '35px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>People</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Faces grouped by DBSCAN facial feature clustering.</p>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px' }}>People Explorer</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>People groups generated via DBSCAN clustering on FaceNet MTCNN vector spaces.</p>
       </div>
 
       {people.length === 0 ? (
         <div className="empty-state glass-panel">
-          <Users className="empty-icon" />
-          <h3>No People Identified</h3>
-          <p>Index photos with human faces and trigger Face Clustering to group them.</p>
+          <Users className="empty-icon" size={40} />
+          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>No Face Clusters Found</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Run Face Clustering on the Dashboard once photos with faces are successfully indexed.</p>
         </div>
       ) : (
         <div className="people-grid">
@@ -730,7 +782,7 @@ function PeoplePage({ selectedPerson, setSelectedPerson, setSelectedPhoto }) {
                 defaultValue={person.name}
                 onBlur={(e) => handleRename(person.id, e.target.value)}
               />
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
                 {person.faces_count} Photos
               </span>
             </div>
@@ -748,8 +800,6 @@ function SyncHubPage({ fetchStats }) {
   const [sources, setSources] = useState([]);
   const [localPath, setLocalPath] = useState('/photos/local_samples');
   const [simulatedGoogle, setSimulatedGoogle] = useState(true);
-  
-  // Benchmark seed state
   const [seedCount, setSeedCount] = useState(100000);
   const [seeding, setSeeding] = useState(false);
 
@@ -797,7 +847,6 @@ function SyncHubPage({ fetchStats }) {
   };
 
   const triggerSyncJob = async (sourceId) => {
-    // If it's a google photos sync, add simulation query param
     const source = sources.find(s => s.id === sourceId);
     let url = `/api/v1/sync-sources/${sourceId}/sync`;
     if (source && source.source_type === 'google_photos') {
@@ -832,11 +881,9 @@ function SyncHubPage({ fetchStats }) {
     try {
       const res = await fetch(`/api/v1/benchmark/seed?count=${seedCount}`, { method: 'POST' });
       if (res.ok) {
-        alert("Synthetic scaling benchmark seeded successfully! Face clustering running in background.");
         fetchStats();
       }
     } catch (err) {
-      alert("Benchmark seeding failed. Make sure DB container is running.");
       console.error(err);
     } finally {
       setSeeding(false);
@@ -851,21 +898,21 @@ function SyncHubPage({ fetchStats }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '35px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Sync Hub</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Manage your image sources. Connect local drives, sync Google Photos, or run scale seeding.</p>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px' }}>Sync Connections Hub</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Manage your folder streams, connect Google Photos client, or trigger simulated database seedings.</p>
       </div>
 
       <div className="sync-section">
-        {/* Connection Setup */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Connections Setup */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="glass-panel sync-card">
-            <h2 style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Folder size={18} /> Add Local Directory
+            <h2 style={{ fontSize: '20px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Folder size={20} color="var(--primary)" /> Connect Local Directory
             </h2>
             <form onSubmit={addLocalSource} className="form-group">
               <label className="form-label">Absolute Directory Path</label>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
                 <input 
                   type="text" 
                   className="form-input" 
@@ -873,20 +920,20 @@ function SyncHubPage({ fetchStats }) {
                   onChange={(e) => setLocalPath(e.target.value)}
                   style={{ flex: 1 }}
                 />
-                <button type="submit" className="btn btn-secondary">Add</button>
+                <button type="submit" className="btn btn-secondary">Connect</button>
               </div>
             </form>
           </div>
 
           <div className="glass-panel sync-card">
-            <h2 style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <RefreshCw size={18} /> Google Photos Sync
+            <h2 style={{ fontSize: '20px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <RefreshCw size={20} color="var(--accent)" /> Google Photos Integration
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontWeight: '600', display: 'block', fontSize: '14px' }}>Simulate Google Photos</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Imports public domain photos using simulated client</span>
+                  <span style={{ fontWeight: '700', display: 'block', fontSize: '15px' }}>Simulate Account Sync</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Connects mock server pipeline to load sample library</span>
                 </div>
                 <input 
                   type="checkbox" 
@@ -895,48 +942,49 @@ function SyncHubPage({ fetchStats }) {
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
               </div>
-              <button className="btn btn-primary" onClick={addGooglePhotosSource}>
-                Connect Google Photos API
+              <button className="btn btn-primary" onClick={addGooglePhotosSource} style={{ height: '44px' }}>
+                Authenticate Google Photos API
               </button>
             </div>
           </div>
         </div>
 
-        {/* Sync Sources List */}
-        <div className="glass-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <h2 style={{ fontSize: '18px' }}>Active Sync Connections</h2>
+        {/* Connections List */}
+        <div className="glass-panel" style={{ padding: '35px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Active Streams</h2>
           {sources.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>No folders or accounts connected yet.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No synced directories or accounts active.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {sources.map(src => (
-                <div key={src.id} className="glass-panel" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={src.id} className="glass-panel" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
                   <div>
-                    <span style={{ fontWeight: '700', textTransform: 'capitalize', display: 'block' }}>
-                      {src.source_type} Source
+                    <span style={{ fontWeight: '700', textTransform: 'capitalize', display: 'block', fontSize: '15px' }}>
+                      {src.source_type} Stream
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', margin: '4px 0' }}>
-                      {src.path || 'API library connection'}
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', margin: '4px 0 8px 0', wordBreak: 'break-all' }}>
+                      {src.path}
                     </span>
                     <span className={`status-badge status-${src.status}`}>
                       {src.status}
                     </span>
                   </div>
+                  
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
                       className="btn btn-secondary" 
                       onClick={() => triggerSyncJob(src.id)}
                       disabled={src.status === 'syncing'}
-                      style={{ padding: '8px 12px' }}
+                      style={{ padding: '10px 16px', fontSize: '13px' }}
                     >
-                      Sync Now
+                      Sync
                     </button>
                     <button 
                       className="btn btn-danger" 
                       onClick={() => deleteSource(src.id)}
-                      style={{ padding: '8px 12px' }}
+                      style={{ padding: '10px' }}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
@@ -946,19 +994,17 @@ function SyncHubPage({ fetchStats }) {
         </div>
       </div>
 
-      {/* Benchmark seeding panel */}
-      <div className="glass-panel" style={{ marginTop: '40px', padding: '30px' }}>
-        <h2 style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-          <Database size={18} /> 100,000 Photo Scaling Benchmark
+      {/* Seeder Benchmark Card */}
+      <div className="glass-panel" style={{ marginTop: '40px', padding: '35px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
+          <Database size={20} color="var(--primary)" /> 100,000 Photo Scale Seeding Panel
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '20px' }}>
-          Testing with 100,000 real images takes a lot of time and CPU power. Use this seeding panel to insert 
-          <strong> 100,000 synthetic photos</strong> into the database. This allows you to verify that pgvector HNSW search, 
-          Multi-Index Hamming distance duplicate comparisons, and paginated gallery loaders are fully performant and scale at sub-10ms latency.
+        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '24px' }}>
+          Seeding synthetic entries into PostgreSQL pgvector allows you to evaluate backend performance index mappings (B-Tree Bins, HNSW vectors) on heavy transactions under sub-10ms query load times.
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="form-group" style={{ width: '250px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div className="form-group" style={{ width: '280px' }}>
             <label className="form-label">Seed Record Count</label>
             <select 
               className="form-input"
@@ -970,11 +1016,12 @@ function SyncHubPage({ fetchStats }) {
               <option value={100000}>100,000 Photos (Full scaling scale)</option>
             </select>
           </div>
+          
           <button 
             className="btn btn-primary" 
             onClick={runBenchmarkSeed} 
             disabled={seeding}
-            style={{ marginTop: '22px' }}
+            style={{ marginTop: '24px', height: '46px' }}
           >
             {seeding ? <RefreshCw className="status-syncing" size={16} /> : <Database size={16} />}
             {seeding ? 'Seeding Synthetic Records...' : 'Start Scaling Seed'}
@@ -989,33 +1036,6 @@ function SyncHubPage({ fetchStats }) {
 // PHOTO MODAL VIEWER COMPONENT
 // ============================================================================
 function PhotoModal({ photo, onClose, onDelete }) {
-  const [faces, setFaces] = useState([]);
-  
-  const fetchPhotoFaces = async () => {
-    // We can filter photo faces in database, but for simplicity, we query people/details or fetch from DB if needed.
-    // Let's write an inline query or fetch from a helper in FastAPI. 
-    // In our backend, Face contains photo_id. Let's do a quick fetch
-    try {
-      const res = await fetch(`/api/v1/photos/${photo.id}`);
-      // In this modal, since we don't have separate face endpoints, we can fetch all people and see if they contain this photo, 
-      // or we can fetch a specific endpoint to list faces of a photo. 
-      // Wait, in main.py, we have schema.PhotoResponse which has relation, but let's query.
-      // Wait, in main.py, we didn't add a direct GET /photos/{id}/faces endpoint, but we can easily fetch face crops by finding 
-      // faces mapped in this photo, or we can just fetch face details. 
-      // Let's check: in main.py, did we expose faces list in PhotoResponse? 
-      // No, PhotoResponse doesn't have faces. But we can make an API request to fetch faces of a photo!
-      // Let's see: if we didn't write GET /photos/{id}/faces, let's write a quick client-side filter or fetch all face clusters and see, 
-      // or we can just display the photo details (dimensions, size, date, category). 
-      // Let's check: we can fetch the list of faces from `/api/v1/people` or just keep it simple and show metadata! 
-      // Actually, we can fetch the faces for this photo by querying face clusters or displaying face crops! 
-      // Let's make an API call to get all faces. Oh! We didn't define a specific route `/photos/{id}/faces`. 
-      // Wait! We can retrieve this information. Let's look at `PhotoResponse` in schemas.py:
-      // it maps database fields. Let's see if we want to query faces. We can check if there are face crops.
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this photo from database and storage?")) return;
     try {
@@ -1028,15 +1048,11 @@ function PhotoModal({ photo, onClose, onDelete }) {
     }
   };
 
-  useEffect(() => {
-    fetchPhotoFaces();
-  }, [photo]);
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>
-          <X size={24} />
+          <X size={26} />
         </button>
 
         <div className="modal-img-container">
@@ -1048,48 +1064,49 @@ function PhotoModal({ photo, onClose, onDelete }) {
         </div>
 
         <div className="modal-info">
-          {/* Details */}
+          {/* Metadata information */}
           <div>
-            <h2 style={{ fontSize: '20px', marginBottom: '8px', wordBreak: 'break-all' }}>{photo.filename}</h2>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '10px', wordBreak: 'break-all' }}>{photo.filename}</h2>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <span className="status-badge status-completed" style={{ fontSize: '11px' }}>
-                Category: {photo.category || 'uncategorized'}
+                Category: {photo.category || 'other'}
               </span>
               {photo.category_confidence && (
                 <span className="status-badge status-idle" style={{ fontSize: '11px' }}>
-                  Conf: {(photo.category_confidence * 100).toFixed(0)}%
+                  Confidence: {(photo.category_confidence * 100).toFixed(0)}%
                 </span>
               )}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Calendar size={14} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Calendar size={15} color="var(--primary)" />
                 <span>Captured: {photo.captured_at ? new Date(photo.captured_at).toLocaleString() : 'Unknown'}</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Info size={14} />
-                <span>Dimensions: {photo.width ? `${photo.width}x${photo.height}` : 'Unknown'}</span>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Info size={15} color="var(--accent)" />
+                <span>Resolution: {photo.width ? `${photo.width}x${photo.height}` : 'Unknown'}</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Folder size={14} />
-                <span style={{ wordBreak: 'break-all' }}>Path: {photo.provider_photo_id}</span>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Folder size={15} color="var(--text-muted)" />
+                <span style={{ wordBreak: 'break-all' }}>Location: {photo.provider_photo_id}</span>
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', justifySelf: 'end', justifyContent: 'space-between', height: '100%' }}>
+          {/* Action buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifySelf: 'end', justifyContent: 'space-between', height: '100%', minWidth: '150px' }}>
             <div style={{ textAlign: 'right', fontSize: '13px', color: 'var(--text-muted)' }}>
-              <span>ID: {photo.id}</span>
+              <span>Database ID: {photo.id}</span>
             </div>
+            
             <button 
               className="btn btn-danger" 
               onClick={handleDelete}
-              style={{ width: '100%', padding: '12px' }}
+              style={{ width: '100%', padding: '14px', height: '48px' }}
             >
               <Trash2 size={16} />
-              Delete Photo
+              Delete Entry
             </button>
           </div>
         </div>
