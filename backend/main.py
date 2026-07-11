@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+import hashlib
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 
