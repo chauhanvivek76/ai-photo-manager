@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Install PyTorch CPU-only first to keep image size small
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch==2.2.1 --index-url https://download.pytorch.org/whl/cpu
+    pip install --no-cache-dir torch==2.2.1 torchvision==0.17.1 --index-url https://download.pytorch.org/whl/cpu
 
 # Install other Python packages
 COPY requirements.txt .
