@@ -636,12 +636,12 @@ def seed_large_benchmark_dataset(
             """), photos_batch)
             photos_batch = []
             
-        if len(faces_batch) >= batch_size:
-            db.execute(text("""
-                INSERT INTO faces (photo_id, box_x1, box_y1, box_x2, box_y2, embedding, face_cluster_id)
-                VALUES (:photo_id, :box_x1, :box_y1, :box_x2, :box_y2, :embedding, :face_cluster_id)
-            """), faces_batch)
-            faces_batch = []
+            if faces_batch:
+                db.execute(text("""
+                    INSERT INTO faces (photo_id, box_x1, box_y1, box_x2, box_y2, embedding, face_cluster_id)
+                    VALUES (:photo_id, :box_x1, :box_y1, :box_x2, :box_y2, :embedding, :face_cluster_id)
+                """), faces_batch)
+                faces_batch = []
             
         if i % 20000 == 0:
             db.commit()
