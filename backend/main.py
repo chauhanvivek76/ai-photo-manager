@@ -1,7 +1,9 @@
 import os
+import io
 import random
 import logging
 import hashlib
+import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 
@@ -678,8 +680,6 @@ def seed_large_benchmark_dataset(
     return {"message": f"Successfully seeded {count} benchmark photos and triggered face clustering."}
 
 # Help helpers for seeding
-import numpy as np
-import io
 
 def np_random_unit_vector(dims):
     vec = np.random.normal(0, 1, dims)
