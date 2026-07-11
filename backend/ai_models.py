@@ -202,9 +202,13 @@ def cluster_face_embeddings(faces_list: list, eps: float = 0.6, min_samples: int
                 end = start + batch_size
                 X_batch = X_rem[start:end]
                 
-                # Broadcasting for distance calculation in batch
-                diff = X_batch[:, np.newaxis, :] - centroid_matrix[np.newaxis, :, :]
-                dists = np.linalg.norm(diff, axis=2)
+                # Using algebraic expansion for memory-efficient and ultra-fast L2 distance
+                # ||x - c||^2 = ||x||^2 + ||c||^2 - 2 * x . c^T
+                x_sq = np.sum(X_batch ** 2, axis=1)[:, np.newaxis]
+                c_sq = np.sum(centroid_matrix ** 2, axis=1)
+                cross_term = 2 * np.dot(X_batch, centroid_matrix.T)
+                sq_dists = np.clip(x_sq + c_sq - cross_term, a_min=0, a_max=None)
+                dists = np.sqrt(sq_dists)
                 
                 min_indices = np.argmin(dists, axis=1)
                 min_dists = np.min(dists, axis=1)
