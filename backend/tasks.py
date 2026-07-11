@@ -187,15 +187,22 @@ def cluster_faces_task(eps: float = 0.55, min_samples: int = 2):
             else:
                 db_clusters[label] = existing_cluster.id
                 
-        # 3. Save clusters to faces
+        # 3. Save clusters to faces using chunked bulk updates to avoid N database round-trips
+        from collections import defaultdict
+        cluster_face_ids = defaultdict(list)
         for face_id, label in cluster_map.items():
-            face = db.query(Face).filter(Face.id == face_id).first()
-            if face:
-                if label >= 0:
-                    face.face_cluster_id = db_clusters[label]
-                else:
-                    face.face_cluster_id = None  # Reset to noise if unclustered
-                    
+            cluster_id = db_clusters.get(label) if label >= 0 else None
+            cluster_face_ids[cluster_id].append(face_id)
+            
+        logger.info(f"Performing bulk database updates for {len(cluster_face_ids)} face cluster groups...")
+        for cluster_id, face_ids in cluster_face_ids.items():
+            chunk_size = 10000
+            for start in range(0, len(face_ids), chunk_size):
+                chunk = face_ids[start:start+chunk_size]
+                db.query(Face).filter(Face.id.in_(chunk)).update(
+                    {Face.face_cluster_id: cluster_id},
+                    synchronize_session=False
+                )
         db.commit()
         
         # 4. Clean up any empty face clusters
