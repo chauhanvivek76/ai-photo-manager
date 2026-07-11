@@ -158,12 +158,7 @@ def detect_and_embed_faces(image: Image.Image) -> list:
 
 def cluster_face_embeddings(faces_list: list, eps: float = 0.6, min_samples: int = 2) -> dict:
     """
-    Cluster face embeddings using DBSCAN.
-    
-    :param faces_list: A list of tuples containing (face_db_id, embedding_list)
-    :param eps: DBSCAN distance threshold (FaceNet embeddings are L2 normalized, 0.6 is standard)
-    :param min_samples: Minimum cluster size
-    :return: Dict mapping face_db_id -> cluster_label (int) where -1 is noise/unclustered
+    Cluster face embeddings using DBSCAN with a memory-safe hybrid projection algorithm.
     """
     if not faces_list:
         return {}
@@ -171,8 +166,57 @@ def cluster_face_embeddings(faces_list: list, eps: float = 0.6, min_samples: int
     face_ids = [item[0] for item in faces_list]
     X = np.array([item[1] for item in faces_list])
     
-    # Run DBSCAN
-    dbscan = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean', n_jobs=-1)
-    labels = dbscan.fit_predict(X)
+    N = len(faces_list)
+    max_dbscan_samples = 3000
     
+    if N <= max_dbscan_samples:
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean', n_jobs=-1)
+        labels = dbscan.fit_predict(X)
+    else:
+        logger.info(f"Faces count {N} exceeds memory safety limit. Using hybrid centroid projection method.")
+        X_sub = X[:max_dbscan_samples]
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean', n_jobs=-1)
+        labels_sub = dbscan.fit_predict(X_sub)
+        
+        # Calculate centroids of identified clusters (excluding noise label -1)
+        centroids = {}
+        unique_labels = set(labels_sub)
+        for label in unique_labels:
+            if label == -1:
+                continue
+            members = X_sub[labels_sub == label]
+            centroids[label] = members.mean(axis=0)
+            
+        labels = np.full(N, -1)
+        labels[:max_dbscan_samples] = labels_sub
+        
+        if centroids:
+            centroid_labels = list(centroids.keys())
+            centroid_matrix = np.array([centroids[l] for l in centroid_labels])
+            
+            remainder_start = max_dbscan_samples
+            X_rem = X[remainder_start:]
+            
+            batch_size = 5000
+            for start in range(0, len(X_rem), batch_size):
+                end = start + batch_size
+                X_batch = X_rem[start:end]
+                
+                # Broadcasting for distance calculation in batch
+                diff = X_batch[:, np.newaxis, :] - centroid_matrix[np.newaxis, :, :]
+                dists = np.linalg.norm(diff, axis=2)
+                
+                min_indices = np.argmin(dists, axis=1)
+                min_dists = np.min(dists, axis=1)
+                
+                batch_labels = np.full(len(X_batch), -1)
+                within_eps = min_dists <= eps
+                
+                # Assign to nearest cluster centroid if within eps threshold
+                for j in range(len(X_batch)):
+                    if within_eps[j]:
+                        batch_labels[j] = centroid_labels[min_indices[j]]
+                
+                labels[remainder_start + start : remainder_start + end] = batch_labels
+                
     return {face_ids[i]: int(labels[i]) for i in range(len(face_ids))}
