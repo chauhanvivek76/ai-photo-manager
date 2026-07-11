@@ -15,7 +15,7 @@ if [ -n "$DATABASE_URL" ]; then
   fi
 
   echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
-  until curl -s http://$DB_HOST:$DB_PORT/ 2>&1 | grep -q '52' || nc -z $DB_HOST $DB_PORT 2>/dev/null; do
+  until python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('$DB_HOST', int('$DB_PORT')))" 2>/dev/null; do
     echo "PostgreSQL is unavailable - sleeping"
     sleep 2
   done
