@@ -64,8 +64,8 @@ def test_face_dbscan_clustering():
         (105, vectors[4].tolist())
     ]
     
-    # Run clustering (eps=0.55 should separate them into 2 clusters, minimum sample size=2)
-    clusters = cluster_face_embeddings(faces_list, eps=0.55, min_samples=2)
+    # Run clustering (eps=1.2 should separate them into 2 clusters, minimum sample size=2)
+    clusters = cluster_face_embeddings(faces_list, eps=1.2, min_samples=2)
     
     # Verify that:
     # 101, 102, 103 share the same cluster label
