@@ -35,6 +35,7 @@ COPY --from=frontend-builder /app/frontend/dist ./backend/static
 
 # Copy backend source code
 COPY backend/ ./backend/
+COPY tests/ ./tests/
 
 # Set up local photos mount directory
 RUN mkdir -p /photos
