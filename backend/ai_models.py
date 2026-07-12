@@ -43,6 +43,9 @@ def get_image_embedding(image: Image.Image) -> list:
     inputs = processor(images=image, return_tensors="pt")
     with torch.no_grad():
         image_features = model.get_image_features(**inputs)
+    # Extract pooler_output if it is a BaseModelOutput object (transformers v5)
+    if hasattr(image_features, "pooler_output"):
+        image_features = image_features.pooler_output
     # L2 normalize
     image_features = image_features / image_features.norm(dim=-1, keepdim=True)
     return image_features.cpu().numpy()[0].tolist()
@@ -53,6 +56,9 @@ def get_text_embedding(text: str) -> list:
     inputs = processor(text=[text], return_tensors="pt", padding=True)
     with torch.no_grad():
         text_features = model.get_text_features(**inputs)
+    # Extract pooler_output if it is a BaseModelOutput object (transformers v5)
+    if hasattr(text_features, "pooler_output"):
+        text_features = text_features.pooler_output
     # L2 normalize
     text_features = text_features / text_features.norm(dim=-1, keepdim=True)
     return text_features.cpu().numpy()[0].tolist()
