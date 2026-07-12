@@ -1,4 +1,11 @@
 # AuraPhoto - AI-Powered Photo Management Platform
+# AI Photo Manager
+
+## 🎥 Live Demo
+[Watch Demo Video](https://drive.google.com/file/d/1aw_SeVpWgefeGqyP4lUYmsDmWSpGaZ7Z/view?usp=sharing)
+
+## 🚀 Features
+...
 
 AuraPhoto is a scalable, AI-powered photo hub that connects local storage directories and Google Photos libraries. It automatically detects exact and near-duplicates, groups faces, categorizes photos into 7 document/visual types, and supports semantic natural language searches using CLIP vectors.
 
