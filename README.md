@@ -146,6 +146,14 @@ To connect to live Google Photos accounts:
 
 Run the test suite inside the backend container:
 ```bash
+# AI Photo Manager
+
+## 🎥 Demo Video
+https://drive.google.com/file/d/1aw_SeVpWgefeGqyP4lUYmsDmWSpGaZ7Z/view?usp=sharing
+
+## 📂 GitHub Repository
+https://github.com/chauhanvivek76/ai-photo-manager
+
 docker-compose exec api pytest
 ```
 This runs:
